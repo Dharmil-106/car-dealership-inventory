@@ -441,3 +441,90 @@ describe("POST /api/vehicles/:id/purchase", () => {
     expect(res.body).toEqual({ error: "Vehicle not found" });
   });
 });
+
+describe("POST /api/vehicles/:id/restock", () => {
+  let vehicleId;
+
+  beforeEach(async () => {
+    await Vehicle.deleteMany({});
+    const vehicle = await Vehicle.create({
+      make: "Toyota",
+      model: "Camry",
+      category: "Sedan",
+      price: 25000,
+      quantity: 2,
+    });
+    vehicleId = vehicle._id.toString();
+  });
+
+  it("admin restocks a vehicle → 200, quantity increased by amount", async () => {
+    const res = await request(app)
+      .post(`/api/vehicles/${vehicleId}/restock`)
+      .set("Authorization", `Bearer ${adminToken}`)
+      .send({ amount: 5 });
+
+    expect(res.statusCode).toBe(200);
+    expect(res.body.id).toBe(vehicleId);
+    expect(res.body.quantity).toBe(7);
+  });
+
+  it("rejects customer role → 403", async () => {
+    const res = await request(app)
+      .post(`/api/vehicles/${vehicleId}/restock`)
+      .set("Authorization", `Bearer ${customerToken}`)
+      .send({ amount: 5 });
+
+    expect(res.statusCode).toBe(403);
+    expect(res.body).toEqual({ error: "Admin access required" });
+  });
+
+  it("rejects request with no token → 401", async () => {
+    const res = await request(app)
+      .post(`/api/vehicles/${vehicleId}/restock`)
+      .send({ amount: 5 });
+
+    expect(res.statusCode).toBe(401);
+    expect(res.body).toEqual({ error: "No token provided" });
+  });
+
+  it("rejects zero amount → 400", async () => {
+    const res = await request(app)
+      .post(`/api/vehicles/${vehicleId}/restock`)
+      .set("Authorization", `Bearer ${adminToken}`)
+      .send({ amount: 0 });
+
+    expect(res.statusCode).toBe(400);
+    expect(res.body).toEqual({ error: "Amount must be a positive number" });
+  });
+
+  it("rejects negative amount → 400", async () => {
+    const res = await request(app)
+      .post(`/api/vehicles/${vehicleId}/restock`)
+      .set("Authorization", `Bearer ${adminToken}`)
+      .send({ amount: -3 });
+
+    expect(res.statusCode).toBe(400);
+    expect(res.body).toEqual({ error: "Amount must be a positive number" });
+  });
+
+  it("rejects missing amount → 400", async () => {
+    const res = await request(app)
+      .post(`/api/vehicles/${vehicleId}/restock`)
+      .set("Authorization", `Bearer ${adminToken}`)
+      .send({});
+
+    expect(res.statusCode).toBe(400);
+    expect(res.body).toEqual({ error: "Amount must be a positive number" });
+  });
+
+  it("returns 404 for non-existent vehicle id", async () => {
+    const fakeId = "aaaaaaaaaaaaaaaaaaaaaaaa";
+    const res = await request(app)
+      .post(`/api/vehicles/${fakeId}/restock`)
+      .set("Authorization", `Bearer ${adminToken}`)
+      .send({ amount: 5 });
+
+    expect(res.statusCode).toBe(404);
+    expect(res.body).toEqual({ error: "Vehicle not found" });
+  });
+});
