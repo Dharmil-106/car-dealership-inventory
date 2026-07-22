@@ -11,3 +11,13 @@ exports.createVehicle = async (req, res) => {
     return res.status(500).json({ error: "Server error" });
   }
 };
+
+exports.getAllVehicles = async (_req, res) => {
+  try {
+    const vehicles = await Vehicle.find();
+    return res.json(vehicles);
+  } catch (err) {
+    return res.status(500).json({ error: "Server error" });
+  }
+};
+
