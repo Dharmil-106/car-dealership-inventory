@@ -77,3 +77,24 @@ exports.deleteVehicle = async (req, res) => {
   }
 };
 
+exports.purchaseVehicle = async (req, res) => {
+  try {
+    const vehicle = await Vehicle.findById(req.params.id);
+
+    if (!vehicle) {
+      return res.status(404).json({ error: "Vehicle not found" });
+    }
+
+    if (vehicle.quantity <= 0) {
+      return res.status(400).json({ error: "Vehicle out of stock" });
+    }
+
+    vehicle.quantity -= 1;
+    await vehicle.save();
+
+    return res.json({ id: vehicle._id, quantity: vehicle.quantity });
+  } catch (err) {
+    return res.status(500).json({ error: "Server error" });
+  }
+};
+
