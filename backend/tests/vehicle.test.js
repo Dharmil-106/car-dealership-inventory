@@ -166,3 +166,81 @@ describe("GET /api/vehicles", () => {
     expect(res.body[0].make).toBe("BMW");
   });
 });
+
+describe("GET /api/vehicles/search", () => {
+  beforeAll(async () => {
+    await Vehicle.deleteMany({});
+    await Vehicle.insertMany([
+      { make: "Toyota", model: "Camry", category: "Sedan", price: 25000, quantity: 5 },
+      { make: "Toyota", model: "RAV4", category: "SUV", price: 30000, quantity: 3 },
+      { make: "Honda", model: "CR-V", category: "SUV", price: 32000, quantity: 4 },
+      { make: "Ford", model: "Mustang", category: "Sports", price: 45000, quantity: 2 },
+      { make: "BMW", model: "X5", category: "SUV", price: 60000, quantity: 1 },
+    ]);
+  });
+
+  afterAll(async () => {
+    await Vehicle.deleteMany({});
+  });
+
+  it("filters by make → ?make=Toyota returns only Toyotas", async () => {
+    const res = await request(app).get("/api/vehicles/search?make=Toyota");
+
+    expect(res.statusCode).toBe(200);
+    expect(res.body).toHaveLength(2);
+    res.body.forEach((v) => expect(v.make).toBe("Toyota"));
+  });
+
+  it("filters by category → ?category=SUV returns only SUVs", async () => {
+    const res = await request(app).get("/api/vehicles/search?category=SUV");
+
+    expect(res.statusCode).toBe(200);
+    expect(res.body).toHaveLength(3);
+    res.body.forEach((v) => expect(v.category).toBe("SUV"));
+  });
+
+  it("filters by price range → ?minPrice=20000&maxPrice=30000", async () => {
+    const res = await request(app).get(
+      "/api/vehicles/search?minPrice=20000&maxPrice=30000"
+    );
+
+    expect(res.statusCode).toBe(200);
+    expect(res.body).toHaveLength(2);
+    res.body.forEach((v) => {
+      expect(v.price).toBeGreaterThanOrEqual(20000);
+      expect(v.price).toBeLessThanOrEqual(30000);
+    });
+  });
+
+  it("supports combined filters → ?make=Toyota&category=Sedan", async () => {
+    const res = await request(app).get(
+      "/api/vehicles/search?make=Toyota&category=Sedan"
+    );
+
+    expect(res.statusCode).toBe(200);
+    expect(res.body).toHaveLength(1);
+    expect(res.body[0].model).toBe("Camry");
+  });
+
+  it("returns all vehicles when no query params are provided", async () => {
+    const res = await request(app).get("/api/vehicles/search");
+
+    expect(res.statusCode).toBe(200);
+    expect(res.body).toHaveLength(5);
+  });
+
+  it("returns 200 with empty array when no vehicles match", async () => {
+    const res = await request(app).get("/api/vehicles/search?make=Lamborghini");
+
+    expect(res.statusCode).toBe(200);
+    expect(res.body).toEqual([]);
+  });
+
+  it("is public — no token required", async () => {
+    const res = await request(app).get("/api/vehicles/search?category=Sports");
+
+    expect(res.statusCode).toBe(200);
+    expect(res.body).toHaveLength(1);
+    expect(res.body[0].make).toBe("Ford");
+  });
+});
