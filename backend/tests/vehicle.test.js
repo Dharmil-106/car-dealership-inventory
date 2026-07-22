@@ -120,7 +120,7 @@ describe("POST /api/vehicles", () => {
 });
 
 describe("GET /api/vehicles", () => {
-  afterEach(async () => {
+  beforeEach(async () => {
     await Vehicle.deleteMany({});
   });
 
