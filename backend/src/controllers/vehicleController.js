@@ -21,3 +21,24 @@ exports.getAllVehicles = async (_req, res) => {
   }
 };
 
+exports.searchVehicles = async (req, res) => {
+  try {
+    const { make, model, category, minPrice, maxPrice } = req.query;
+    const filter = {};
+
+    if (make) filter.make = make;
+    if (model) filter.model = model;
+    if (category) filter.category = category;
+
+    if (minPrice || maxPrice) {
+      filter.price = {};
+      if (minPrice) filter.price.$gte = Number(minPrice);
+      if (maxPrice) filter.price.$lte = Number(maxPrice);
+    }
+
+    const vehicles = await Vehicle.find(filter);
+    return res.json(vehicles);
+  } catch (err) {
+    return res.status(500).json({ error: "Server error" });
+  }
+};
