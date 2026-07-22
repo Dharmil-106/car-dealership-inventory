@@ -383,3 +383,61 @@ describe("DELETE /api/vehicles/:id", () => {
     expect(res.body).toEqual({ error: "Vehicle not found" });
   });
 });
+
+describe("POST /api/vehicles/:id/purchase", () => {
+  let vehicleId;
+
+  beforeEach(async () => {
+    await Vehicle.deleteMany({});
+    const vehicle = await Vehicle.create({
+      make: "Toyota",
+      model: "Camry",
+      category: "Sedan",
+      price: 25000,
+      quantity: 3,
+    });
+    vehicleId = vehicle._id.toString();
+  });
+
+  it("logged-in user purchases a vehicle → 200, quantity decreased by 1", async () => {
+    const res = await request(app)
+      .post(`/api/vehicles/${vehicleId}/purchase`)
+      .set("Authorization", `Bearer ${customerToken}`);
+
+    expect(res.statusCode).toBe(200);
+    expect(res.body.id).toBe(vehicleId);
+    expect(res.body.quantity).toBe(2);
+  });
+
+  it("rejects purchase when quantity is 0 → 400", async () => {
+    await Vehicle.findByIdAndUpdate(vehicleId, { quantity: 0 });
+
+    const res = await request(app)
+      .post(`/api/vehicles/${vehicleId}/purchase`)
+      .set("Authorization", `Bearer ${customerToken}`);
+
+    expect(res.statusCode).toBe(400);
+    expect(res.body).toEqual({ error: "Vehicle out of stock" });
+
+    // Confirm quantity didn't go negative
+    const vehicle = await Vehicle.findById(vehicleId);
+    expect(vehicle.quantity).toBe(0);
+  });
+
+  it("rejects request with no token → 401", async () => {
+    const res = await request(app).post(`/api/vehicles/${vehicleId}/purchase`);
+
+    expect(res.statusCode).toBe(401);
+    expect(res.body).toEqual({ error: "No token provided" });
+  });
+
+  it("returns 404 for non-existent vehicle id", async () => {
+    const fakeId = "aaaaaaaaaaaaaaaaaaaaaaaa";
+    const res = await request(app)
+      .post(`/api/vehicles/${fakeId}/purchase`)
+      .set("Authorization", `Bearer ${customerToken}`);
+
+    expect(res.statusCode).toBe(404);
+    expect(res.body).toEqual({ error: "Vehicle not found" });
+  });
+});
