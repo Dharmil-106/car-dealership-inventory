@@ -7,6 +7,7 @@ const User = require("../src/models/User");
 let mongoServer;
 
 beforeAll(async () => {
+  process.env.JWT_SECRET = "test-jwt-secret";
   mongoServer = await MongoMemoryServer.create();
   await mongoose.connect(mongoServer.getUri());
 });
