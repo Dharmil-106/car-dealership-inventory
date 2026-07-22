@@ -1,4 +1,8 @@
 const mongoose = require("mongoose");
+const dns = require("dns");
+
+// Use public DNS to resolve MongoDB SRV records if local ISP/router DNS blocks SRV queries
+dns.setServers(["8.8.8.8", "8.8.4.4"]);
 
 const connectDB = async () => {
   try {
@@ -11,3 +15,4 @@ const connectDB = async () => {
 };
 
 module.exports = connectDB;
+
