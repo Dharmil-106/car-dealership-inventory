@@ -5,6 +5,7 @@ const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 const app = require("../src/app");
 const User = require("../src/models/User");
+const Vehicle = require("../src/models/Vehicle");
 
 let mongoServer;
 let adminToken;
@@ -115,5 +116,53 @@ describe("POST /api/vehicles", () => {
 
     expect(res.statusCode).toBe(400);
     expect(res.body).toHaveProperty("error");
+  });
+});
+
+describe("GET /api/vehicles", () => {
+  afterEach(async () => {
+    await Vehicle.deleteMany({});
+  });
+
+  it("returns 200 with an empty array when no vehicles exist", async () => {
+    const res = await request(app).get("/api/vehicles");
+
+    expect(res.statusCode).toBe(200);
+    expect(res.body).toEqual([]);
+  });
+
+  it("returns 200 with all seeded vehicles and their fields", async () => {
+    const vehicles = [
+      { make: "Toyota", model: "Camry", category: "Sedan", price: 25000, quantity: 5 },
+      { make: "Honda", model: "CR-V", category: "SUV", price: 32000, quantity: 3 },
+      { make: "Ford", model: "Mustang", category: "Sports", price: 45000, quantity: 2 },
+    ];
+    await Vehicle.insertMany(vehicles);
+
+    const res = await request(app).get("/api/vehicles");
+
+    expect(res.statusCode).toBe(200);
+    expect(res.body).toHaveLength(3);
+    expect(res.body[0]).toHaveProperty("_id");
+    expect(res.body[0]).toHaveProperty("make");
+    expect(res.body[0]).toHaveProperty("model");
+    expect(res.body[0]).toHaveProperty("category");
+    expect(res.body[0]).toHaveProperty("price");
+    expect(res.body[0]).toHaveProperty("quantity");
+
+    const makes = res.body.map((v) => v.make);
+    expect(makes).toContain("Toyota");
+    expect(makes).toContain("Honda");
+    expect(makes).toContain("Ford");
+  });
+
+  it("is public — no token required, still returns 200", async () => {
+    await Vehicle.create({ make: "BMW", model: "X5", category: "SUV", price: 60000, quantity: 1 });
+
+    const res = await request(app).get("/api/vehicles");
+
+    expect(res.statusCode).toBe(200);
+    expect(res.body).toHaveLength(1);
+    expect(res.body[0].make).toBe("BMW");
   });
 });
