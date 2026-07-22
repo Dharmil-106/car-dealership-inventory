@@ -244,3 +244,142 @@ describe("GET /api/vehicles/search", () => {
     expect(res.body[0].make).toBe("Ford");
   });
 });
+
+describe("PUT /api/vehicles/:id", () => {
+  let vehicleId;
+
+  beforeEach(async () => {
+    await Vehicle.deleteMany({});
+    const vehicle = await Vehicle.create({
+      make: "Toyota",
+      model: "Camry",
+      category: "Sedan",
+      price: 25000,
+      quantity: 5,
+    });
+    vehicleId = vehicle._id.toString();
+  });
+
+  it("admin updates one field (price) → 200, other fields unchanged", async () => {
+    const res = await request(app)
+      .put(`/api/vehicles/${vehicleId}`)
+      .set("Authorization", `Bearer ${adminToken}`)
+      .send({ price: 27000 });
+
+    expect(res.statusCode).toBe(200);
+    expect(res.body.price).toBe(27000);
+    expect(res.body.make).toBe("Toyota");
+    expect(res.body.model).toBe("Camry");
+    expect(res.body.category).toBe("Sedan");
+    expect(res.body.quantity).toBe(5);
+  });
+
+  it("admin updates multiple fields at once → 200", async () => {
+    const res = await request(app)
+      .put(`/api/vehicles/${vehicleId}`)
+      .set("Authorization", `Bearer ${adminToken}`)
+      .send({ price: 28000, quantity: 10, category: "Luxury Sedan" });
+
+    expect(res.statusCode).toBe(200);
+    expect(res.body.price).toBe(28000);
+    expect(res.body.quantity).toBe(10);
+    expect(res.body.category).toBe("Luxury Sedan");
+    expect(res.body.make).toBe("Toyota");
+  });
+
+  it("rejects customer role → 403", async () => {
+    const res = await request(app)
+      .put(`/api/vehicles/${vehicleId}`)
+      .set("Authorization", `Bearer ${customerToken}`)
+      .send({ price: 30000 });
+
+    expect(res.statusCode).toBe(403);
+    expect(res.body).toEqual({ error: "Admin access required" });
+  });
+
+  it("rejects request with no token → 401", async () => {
+    const res = await request(app)
+      .put(`/api/vehicles/${vehicleId}`)
+      .send({ price: 30000 });
+
+    expect(res.statusCode).toBe(401);
+    expect(res.body).toEqual({ error: "No token provided" });
+  });
+
+  it("returns 404 for non-existent vehicle id", async () => {
+    const fakeId = "aaaaaaaaaaaaaaaaaaaaaaaa";
+    const res = await request(app)
+      .put(`/api/vehicles/${fakeId}`)
+      .set("Authorization", `Bearer ${adminToken}`)
+      .send({ price: 30000 });
+
+    expect(res.statusCode).toBe(404);
+    expect(res.body).toEqual({ error: "Vehicle not found" });
+  });
+
+  it("rejects invalid update value (negative price) → 400", async () => {
+    const res = await request(app)
+      .put(`/api/vehicles/${vehicleId}`)
+      .set("Authorization", `Bearer ${adminToken}`)
+      .send({ price: -5000 });
+
+    expect(res.statusCode).toBe(400);
+    expect(res.body).toHaveProperty("error");
+  });
+});
+
+describe("DELETE /api/vehicles/:id", () => {
+  let vehicleId;
+
+  beforeEach(async () => {
+    await Vehicle.deleteMany({});
+    const vehicle = await Vehicle.create({
+      make: "Toyota",
+      model: "Camry",
+      category: "Sedan",
+      price: 25000,
+      quantity: 5,
+    });
+    vehicleId = vehicle._id.toString();
+  });
+
+  it("admin deletes a vehicle → 200, vehicle is gone", async () => {
+    const res = await request(app)
+      .delete(`/api/vehicles/${vehicleId}`)
+      .set("Authorization", `Bearer ${adminToken}`);
+
+    expect(res.statusCode).toBe(200);
+    expect(res.body).toEqual({ message: "Vehicle deleted" });
+
+    // Confirm it's actually gone
+    const listRes = await request(app).get("/api/vehicles");
+    const ids = listRes.body.map((v) => v._id);
+    expect(ids).not.toContain(vehicleId);
+  });
+
+  it("rejects customer role → 403", async () => {
+    const res = await request(app)
+      .delete(`/api/vehicles/${vehicleId}`)
+      .set("Authorization", `Bearer ${customerToken}`);
+
+    expect(res.statusCode).toBe(403);
+    expect(res.body).toEqual({ error: "Admin access required" });
+  });
+
+  it("rejects request with no token → 401", async () => {
+    const res = await request(app).delete(`/api/vehicles/${vehicleId}`);
+
+    expect(res.statusCode).toBe(401);
+    expect(res.body).toEqual({ error: "No token provided" });
+  });
+
+  it("returns 404 for non-existent vehicle id", async () => {
+    const fakeId = "aaaaaaaaaaaaaaaaaaaaaaaa";
+    const res = await request(app)
+      .delete(`/api/vehicles/${fakeId}`)
+      .set("Authorization", `Bearer ${adminToken}`);
+
+    expect(res.statusCode).toBe(404);
+    expect(res.body).toEqual({ error: "Vehicle not found" });
+  });
+});
