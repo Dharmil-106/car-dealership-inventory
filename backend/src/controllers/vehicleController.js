@@ -62,3 +62,18 @@ exports.updateVehicle = async (req, res) => {
     return res.status(500).json({ error: "Server error" });
   }
 };
+
+exports.deleteVehicle = async (req, res) => {
+  try {
+    const vehicle = await Vehicle.findByIdAndDelete(req.params.id);
+
+    if (!vehicle) {
+      return res.status(404).json({ error: "Vehicle not found" });
+    }
+
+    return res.json({ message: "Vehicle deleted" });
+  } catch (err) {
+    return res.status(500).json({ error: "Server error" });
+  }
+};
+
