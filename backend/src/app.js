@@ -12,4 +12,8 @@ app.get("/api/health", (_req, res) => {
   res.json({ status: "ok" });
 });
 
+// Routes
+const authRoutes = require("./routes/authRoutes");
+app.use("/api/auth", authRoutes);
+
 module.exports = app;
