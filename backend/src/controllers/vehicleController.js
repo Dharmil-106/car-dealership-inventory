@@ -98,3 +98,25 @@ exports.purchaseVehicle = async (req, res) => {
   }
 };
 
+exports.restockVehicle = async (req, res) => {
+  try {
+    const { amount } = req.body;
+
+    if (!amount || typeof amount !== "number" || amount <= 0) {
+      return res.status(400).json({ error: "Amount must be a positive number" });
+    }
+
+    const vehicle = await Vehicle.findById(req.params.id);
+
+    if (!vehicle) {
+      return res.status(404).json({ error: "Vehicle not found" });
+    }
+
+    vehicle.quantity += amount;
+    await vehicle.save();
+
+    return res.json({ id: vehicle._id, quantity: vehicle.quantity });
+  } catch (err) {
+    return res.status(500).json({ error: "Server error" });
+  }
+};
