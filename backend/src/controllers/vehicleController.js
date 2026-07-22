@@ -42,3 +42,23 @@ exports.searchVehicles = async (req, res) => {
     return res.status(500).json({ error: "Server error" });
   }
 };
+
+exports.updateVehicle = async (req, res) => {
+  try {
+    const vehicle = await Vehicle.findByIdAndUpdate(req.params.id, req.body, {
+      new: true,
+      runValidators: true,
+    });
+
+    if (!vehicle) {
+      return res.status(404).json({ error: "Vehicle not found" });
+    }
+
+    return res.json(vehicle);
+  } catch (err) {
+    if (err.name === "ValidationError") {
+      return res.status(400).json({ error: err.message });
+    }
+    return res.status(500).json({ error: "Server error" });
+  }
+};
