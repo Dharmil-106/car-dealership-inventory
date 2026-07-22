@@ -75,3 +75,62 @@ describe("POST /api/auth/register", () => {
     expect(res.body.role).toBe("customer");
   });
 });
+
+describe("POST /api/auth/login", () => {
+  const validUser = { email: "test@example.com", password: "Password123" };
+
+  // Pre-register a user before each login test
+  beforeEach(async () => {
+    await request(app).post("/api/auth/register").send(validUser);
+  });
+
+  it("returns 200 with a JWT token and user object on valid credentials", async () => {
+    const res = await request(app).post("/api/auth/login").send(validUser);
+
+    expect(res.statusCode).toBe(200);
+    expect(res.body).toHaveProperty("token");
+    expect(typeof res.body.token).toBe("string");
+    // JWT has 3 dot-separated base64 segments
+    expect(res.body.token.split(".")).toHaveLength(3);
+    expect(res.body.user).toHaveProperty("id");
+    expect(res.body.user.email).toBe("test@example.com");
+    expect(res.body.user.role).toBe("customer");
+    expect(res.body.user).not.toHaveProperty("password");
+  });
+
+  it("returns 401 for wrong password", async () => {
+    const res = await request(app)
+      .post("/api/auth/login")
+      .send({ email: validUser.email, password: "WrongPassword" });
+
+    expect(res.statusCode).toBe(401);
+    expect(res.body).toEqual({ error: "Invalid email or password" });
+  });
+
+  it("returns 401 for non-existent email — same generic error, no email leak", async () => {
+    const res = await request(app)
+      .post("/api/auth/login")
+      .send({ email: "nobody@example.com", password: "Password123" });
+
+    expect(res.statusCode).toBe(401);
+    expect(res.body).toEqual({ error: "Invalid email or password" });
+  });
+
+  it("returns 400 when email is missing", async () => {
+    const res = await request(app)
+      .post("/api/auth/login")
+      .send({ password: "Password123" });
+
+    expect(res.statusCode).toBe(400);
+    expect(res.body).toHaveProperty("error");
+  });
+
+  it("returns 400 when password is missing", async () => {
+    const res = await request(app)
+      .post("/api/auth/login")
+      .send({ email: "test@example.com" });
+
+    expect(res.statusCode).toBe(400);
+    expect(res.body).toHaveProperty("error");
+  });
+});
