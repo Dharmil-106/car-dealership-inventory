@@ -90,8 +90,9 @@ export default function VehicleForm({ existingVehicle, onClose, onSuccess }) {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/50 p-4 backdrop-blur-xs">
-      <div className="w-full max-w-lg rounded-2xl border border-gray-200 bg-white p-6 shadow-xl">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/50 p-4 backdrop-blur-xs overflow-y-auto">
+      <div className="w-full max-w-lg my-auto max-h-[90vh] overflow-y-auto rounded-2xl border border-gray-200 bg-white p-5 sm:p-6 shadow-xl">
+
         <div className="flex items-center justify-between border-b border-gray-100 pb-4">
           <h2 className="text-xl font-semibold text-gray-900">
             {isEdit ? "Edit Vehicle" : "Add New Vehicle"}

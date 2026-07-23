@@ -23,14 +23,15 @@ export default function ConfirmPurchaseModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/50 p-4 backdrop-blur-xs"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/50 p-4 backdrop-blur-xs overflow-y-auto"
       onClick={(e) => {
         if (e.target === e.currentTarget && !loading) {
           onClose();
         }
       }}
     >
-      <div className="w-full max-w-md rounded-2xl border border-gray-200 bg-white p-6 shadow-xl transition-all">
+      <div className="w-full max-w-md my-auto max-h-[90vh] overflow-y-auto rounded-2xl border border-gray-200 bg-white p-5 sm:p-6 shadow-xl transition-all">
+
         {/* Header */}
         <div className="flex items-center justify-between border-b border-gray-100 pb-4">
           <h2 className="text-xl font-semibold text-gray-900">

@@ -136,11 +136,11 @@ export default function SearchFilters({ onSearch, loading }) {
       </div>
 
       {/* Actions */}
-      <div className="mt-3 flex items-center gap-3">
+      <div className="mt-3 flex flex-wrap sm:flex-nowrap items-center gap-3">
         <button
           type="submit"
           disabled={loading}
-          className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-emerald-700 focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 focus:outline-none disabled:opacity-50"
+          className="w-full sm:w-auto rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-emerald-700 focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 focus:outline-none disabled:opacity-50"
         >
           {loading ? "Searching…" : "Search"}
         </button>
@@ -148,12 +148,13 @@ export default function SearchFilters({ onSearch, loading }) {
           <button
             type="button"
             onClick={handleClear}
-            className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+            className="w-full sm:w-auto rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
           >
             Clear filters
           </button>
         )}
       </div>
     </form>
+
   );
 }

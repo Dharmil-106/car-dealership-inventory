@@ -1,15 +1,17 @@
-import { Link, useLocation } from "react-router-dom";
+import { useState } from "react";
+import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
 /**
  * Layout for Admin Panel.
- * Dark sidebar (bg-gray-900) + Light main content area (bg-gray-50).
+ * Responsive Dark sidebar (bg-gray-900) + Light main content area (bg-gray-50).
  */
 export default function AdminLayout({ children }) {
   const { user, logout } = useAuth();
-  const location = useLocation();
+  const [mobileAdminMenuOpen, setMobileAdminMenuOpen] = useState(false);
 
   function scrollToSection(id) {
+    setMobileAdminMenuOpen(false);
     const el = document.getElementById(id);
     if (el) {
       el.scrollIntoView({ behavior: "smooth" });
@@ -17,86 +19,112 @@ export default function AdminLayout({ children }) {
   }
 
   return (
-    <div className="flex min-h-screen bg-gray-50">
-      {/* Dark Sidebar */}
-      <aside className="flex w-64 flex-col border-r border-gray-800 bg-gray-900 text-gray-300">
-        {/* Branding */}
-        <div className="flex items-center gap-3 border-b border-gray-800 px-6 py-5">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-600 font-bold text-white">
-            K
+    <div className="flex flex-col md:flex-row min-h-screen bg-gray-50">
+      {/* Sidebar for Desktop & Collapsible Bar for Mobile */}
+      <aside className="w-full md:w-64 flex-shrink-0 bg-gray-900 text-gray-300 border-b md:border-b-0 md:border-r border-gray-800">
+        {/* Branding & Mobile Toggle */}
+        <div className="flex items-center justify-between border-b border-gray-800 px-6 py-4 md:py-5">
+          <div className="flex items-center gap-3">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-600 font-bold text-white shadow-xs">
+              K
+            </div>
+            <div>
+              <h1 className="font-semibold text-white">Kata Admin</h1>
+              <p className="text-xs text-gray-400">Inventory Portal</p>
+            </div>
           </div>
-          <div>
-            <h1 className="font-semibold text-white">Kata Admin</h1>
-            <p className="text-xs text-gray-400">Inventory Portal</p>
-          </div>
+
+          <button
+            type="button"
+            onClick={() => setMobileAdminMenuOpen(!mobileAdminMenuOpen)}
+            className="md:hidden inline-flex items-center justify-center rounded-lg p-1.5 text-gray-400 hover:bg-gray-800 hover:text-white focus:outline-none"
+            aria-label="Toggle Admin Menu"
+          >
+            <svg
+              className="h-6 w-6"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth={2}
+            >
+              {mobileAdminMenuOpen ? (
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+              ) : (
+                <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+              )}
+            </svg>
+          </button>
         </div>
 
-        {/* Navigation */}
-        <nav className="flex-1 space-y-1 px-3 py-4">
-          <p className="px-3 text-xs font-semibold uppercase tracking-wider text-gray-500">
-            Admin Menu
-          </p>
-          
-          <button
-            type="button"
-            onClick={() => scrollToSection("overview")}
-            className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-gray-300 hover:bg-gray-800 hover:text-white transition-colors"
-          >
-            <span>Overview</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => scrollToSection("manage-vehicles")}
-            className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-gray-300 hover:bg-gray-800 hover:text-white transition-colors"
-          >
-            <span>Manage Vehicles</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => scrollToSection("purchase-history")}
-            className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-gray-300 hover:bg-gray-800 hover:text-white transition-colors"
-          >
-            <span>Purchase History</span>
-          </button>
-
-          <div className="pt-6">
+        {/* Navigation Content (Visible always on desktop, conditionally on mobile) */}
+        <div className={`${mobileAdminMenuOpen ? "block" : "hidden"} md:block flex-col justify-between`}>
+          <nav className="space-y-1 px-3 py-4">
             <p className="px-3 text-xs font-semibold uppercase tracking-wider text-gray-500">
-              Quick Links
+              Admin Menu
             </p>
-            <Link
-              to="/"
-              className="mt-1 flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-gray-400 hover:bg-gray-800 hover:text-white transition-colors"
-            >
-              <span>← Back to Dashboard</span>
-            </Link>
-          </div>
-        </nav>
 
-        {/* User Footer */}
-        <div className="border-t border-gray-800 p-4">
-          <div className="flex items-center justify-between">
-            <div className="truncate">
-              <p className="truncate text-sm font-medium text-white">
-                {user?.name || user?.email}
-              </p>
-              <p className="text-xs text-emerald-400">Admin Account</p>
-            </div>
             <button
-              onClick={logout}
-              className="rounded-lg border border-gray-700 px-2.5 py-1 text-xs text-gray-300 hover:bg-gray-800 hover:text-white"
+              type="button"
+              onClick={() => scrollToSection("overview")}
+              className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-gray-300 hover:bg-gray-800 hover:text-white transition-colors"
             >
-              Logout
+              <span>Overview</span>
             </button>
+
+            <button
+              type="button"
+              onClick={() => scrollToSection("manage-vehicles")}
+              className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-gray-300 hover:bg-gray-800 hover:text-white transition-colors"
+            >
+              <span>Manage Vehicles</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => scrollToSection("purchase-history")}
+              className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-gray-300 hover:bg-gray-800 hover:text-white transition-colors"
+            >
+              <span>Purchase History</span>
+            </button>
+
+            <div className="pt-6">
+              <p className="px-3 text-xs font-semibold uppercase tracking-wider text-gray-500">
+                Quick Links
+              </p>
+              <Link
+                to="/"
+                className="mt-1 flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-gray-400 hover:bg-gray-800 hover:text-white transition-colors"
+              >
+                <span>← Back to Dashboard</span>
+              </Link>
+            </div>
+          </nav>
+
+          {/* User Footer */}
+          <div className="border-t border-gray-800 p-4">
+            <div className="flex items-center justify-between">
+              <div className="truncate">
+                <p className="truncate text-sm font-medium text-white">
+                  {user?.name || user?.email}
+                </p>
+                <p className="text-xs text-emerald-400">Admin Account</p>
+              </div>
+              <button
+                onClick={logout}
+                className="rounded-lg border border-gray-700 px-2.5 py-1 text-xs text-gray-300 hover:bg-gray-800 hover:text-white"
+              >
+                Logout
+              </button>
+            </div>
           </div>
         </div>
       </aside>
 
       {/* Main Content Area */}
-      <main className="flex-1 overflow-y-auto bg-gray-50 p-6 sm:p-8">
+      <main className="flex-1 overflow-x-hidden bg-gray-50 p-4 sm:p-6 lg:p-8">
         {children}
       </main>
     </div>
   );
 }
+

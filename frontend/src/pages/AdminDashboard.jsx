@@ -124,7 +124,8 @@ function VehicleTableRow({ vehicle, onEdit, onDelete, onRestock }) {
 
       {/* Actions */}
       <td className="px-4 py-3 align-middle">
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-1.5 min-w-[160px]">
+
           {!showRestock ? (
             <>
               <button
