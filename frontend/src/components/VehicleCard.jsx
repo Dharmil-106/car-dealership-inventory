@@ -1,10 +1,49 @@
+import { useState } from "react";
+
 /**
- * Displays a single vehicle as a card.
- * Props: vehicle ({ id, make, model, category, price, quantity })
- *        onPurchase — callback, wired up in the next step
+ * Displays a single vehicle as a card with purchase functionality.
+ *
+ * Props:
+ *   vehicle   — { id, make, model, category, price, quantity }
+ *   onPurchase — async (vehicleId) => updatedVehicle | throws
+ *   isLoggedIn — whether the user has a valid session
+ *   onLoginRedirect — called when an unauthenticated user clicks Purchase
  */
-export default function VehicleCard({ vehicle, onPurchase }) {
+export default function VehicleCard({
+  vehicle,
+  onPurchase,
+  isLoggedIn,
+  onLoginRedirect,
+}) {
+  const [purchasing, setPurchasing] = useState(false);
+  const [error, setError] = useState(null);
+
   const inStock = vehicle.quantity > 0;
+
+  async function handleClick() {
+    // Unauthenticated → redirect to login
+    if (!isLoggedIn) {
+      onLoginRedirect?.();
+      return;
+    }
+
+    setPurchasing(true);
+    setError(null);
+    try {
+      await onPurchase(vehicle.id);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setPurchasing(false);
+    }
+  }
+
+  // Determine button state
+  const disabled = !inStock || purchasing;
+
+  let buttonLabel = "Purchase";
+  if (purchasing) buttonLabel = "Purchasing…";
+  else if (!inStock) buttonLabel = "Out of Stock";
 
   return (
     <div className="group flex flex-col rounded-xl border border-gray-200 bg-white p-5 shadow-sm transition-shadow hover:shadow-md">
@@ -38,22 +77,28 @@ export default function VehicleCard({ vehicle, onPurchase }) {
         )}
       </div>
 
-      {/* Purchase button — placeholder, full logic in next step */}
-      <button
-        onClick={() => onPurchase?.(vehicle.id)}
-        disabled={!inStock}
-        className="mt-auto pt-4"
-      >
-        <span
+      {/* Inline purchase error */}
+      {error && (
+        <p className="mt-2 text-xs text-red-600">{error}</p>
+      )}
+
+      {/* Purchase button */}
+      <div className="mt-auto pt-4">
+        <button
+          onClick={handleClick}
+          disabled={disabled}
           className={`block w-full rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
-            inStock
-              ? "bg-emerald-600 text-white hover:bg-emerald-700"
-              : "cursor-not-allowed bg-gray-100 text-gray-400"
+            disabled
+              ? "cursor-not-allowed bg-gray-100 text-gray-400"
+              : "bg-emerald-600 text-white hover:bg-emerald-700"
           }`}
         >
-          {inStock ? "Purchase" : "Out of Stock"}
-        </span>
-      </button>
+          {purchasing && (
+            <span className="mr-2 inline-block h-3.5 w-3.5 animate-spin rounded-full border-2 border-gray-300 border-t-white align-middle" />
+          )}
+          {buttonLabel}
+        </button>
+      </div>
     </div>
   );
 }

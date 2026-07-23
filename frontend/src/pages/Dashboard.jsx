@@ -1,9 +1,14 @@
 import { useState, useEffect, useCallback } from "react";
-import { getAllVehicles, searchVehicles } from "../api/api";
+import { useNavigate } from "react-router-dom";
+import { getAllVehicles, searchVehicles, purchaseVehicle } from "../api/api";
+import { useAuth } from "../context/AuthContext";
 import VehicleCard from "../components/VehicleCard";
 import SearchFilters from "../components/SearchFilters";
 
 export default function Dashboard() {
+  const { user, token } = useAuth();
+  const navigate = useNavigate();
+
   const [vehicles, setVehicles] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -44,9 +49,19 @@ export default function Dashboard() {
     }
   }
 
-  /** Purchase placeholder — will be wired to the API in the next step */
-  function handlePurchase(vehicleId) {
-    console.log("Purchase clicked for vehicle:", vehicleId);
+  /**
+   * Purchase a vehicle — calls API, then updates local state.
+   * Throws on failure so VehicleCard can show the inline error.
+   */
+  async function handlePurchase(vehicleId) {
+    const result = await purchaseVehicle(vehicleId, token);
+
+    // Update the vehicle's quantity in local state (no full refetch)
+    setVehicles((prev) =>
+      prev.map((v) =>
+        v.id === vehicleId ? { ...v, quantity: result.quantity } : v
+      )
+    );
   }
 
   return (
@@ -83,6 +98,8 @@ export default function Dashboard() {
               key={vehicle.id}
               vehicle={vehicle}
               onPurchase={handlePurchase}
+              isLoggedIn={!!user}
+              onLoginRedirect={() => navigate("/login")}
             />
           ))}
         </div>

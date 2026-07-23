@@ -76,4 +76,16 @@ export async function searchVehicles(filters = {}) {
   return request(`/vehicles/search${qs ? `?${qs}` : ""}`);
 }
 
+/**
+ * POST /api/vehicles/:id/purchase
+ * Requires: valid token (any logged-in user).
+ * Returns { id, quantity } on success.
+ */
+export async function purchaseVehicle(vehicleId, token) {
+  return request(`/vehicles/${vehicleId}/purchase`, {
+    method: "POST",
+    token,
+  });
+}
+
 export default request;
