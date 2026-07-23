@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { loginUser, registerUser } from "../api/api";
 
 const AuthContext = createContext(null);
@@ -11,6 +12,7 @@ const USER_KEY = "autohaus_user";
  * Provides { user, token, login, register, logout, loading, error }.
  */
 export function AuthProvider({ children }) {
+  const navigate = useNavigate();
   const [user, setUser] = useState(null);
   const [token, setToken] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -79,6 +81,7 @@ export function AuthProvider({ children }) {
     setError(null);
     localStorage.removeItem(TOKEN_KEY);
     localStorage.removeItem(USER_KEY);
+    navigate("/login");
   }
 
   function clearError() {

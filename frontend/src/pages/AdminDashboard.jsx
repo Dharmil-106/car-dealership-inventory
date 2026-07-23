@@ -199,7 +199,10 @@ export default function AdminDashboard() {
   const [editingVehicle, setEditingVehicle] = useState(null);
 
   // Protected route check
-  if (!user || user.role !== "admin") {
+  if (!user) {
+    return <Navigate to="/login" replace />;
+  }
+  if (user.role !== "admin") {
     return <Navigate to="/" replace />;
   }
 
