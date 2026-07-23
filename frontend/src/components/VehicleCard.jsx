@@ -1,4 +1,5 @@
 import { useState } from "react";
+import ConfirmPurchaseModal from "./ConfirmPurchaseModal";
 
 /**
  * Displays a single vehicle as a card with purchase & admin controls.
@@ -27,22 +28,30 @@ export default function VehicleCard({
   const [deleting, setDeleting] = useState(false);
   const [restocking, setRestocking] = useState(false);
   const [showRestockInput, setShowRestockInput] = useState(false);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [restockAmount, setRestockAmount] = useState("5");
   const [error, setError] = useState(null);
   const [imgError, setImgError] = useState(false);
 
   const inStock = vehicle.quantity > 0;
 
-  async function handlePurchase() {
+  /** Called when the user clicks the "Purchase" button on the card */
+  function handlePurchaseClick() {
     if (!isLoggedIn) {
       onLoginRedirect?.();
       return;
     }
+    setError(null);
+    setShowConfirmModal(true);
+  }
 
+  /** Called when the user confirms the purchase inside ConfirmPurchaseModal */
+  async function handleConfirmPurchase() {
     setPurchasing(true);
     setError(null);
     try {
       await onPurchase(vehicle.id);
+      setShowConfirmModal(false);
     } catch (err) {
       setError(err.message || "Purchase failed.");
     } finally {
@@ -224,7 +233,7 @@ export default function VehicleCard({
       {!isAdmin && (
         <div className="mt-auto pt-4">
           <button
-            onClick={handlePurchase}
+            onClick={handlePurchaseClick}
             disabled={disabled}
             className={`block w-full rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
               disabled
@@ -238,6 +247,22 @@ export default function VehicleCard({
             {buttonLabel}
           </button>
         </div>
+      )}
+
+      {/* Confirmation modal before purchasing */}
+      {showConfirmModal && (
+        <ConfirmPurchaseModal
+          vehicle={vehicle}
+          onConfirm={handleConfirmPurchase}
+          onClose={() => {
+            if (!purchasing) {
+              setShowConfirmModal(false);
+              setError(null);
+            }
+          }}
+          loading={purchasing}
+          error={error}
+        />
       )}
     </div>
   );

@@ -3,6 +3,7 @@ import { useAuth } from "./context/AuthContext";
 import Dashboard from "./pages/Dashboard";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
+import AdminDashboard from "./pages/AdminDashboard";
 
 function App() {
   const { user, logout } = useAuth();
@@ -16,6 +17,15 @@ function App() {
         <Link to="/" className="text-sm text-gray-600 hover:text-emerald-600">
           Dashboard
         </Link>
+
+        {user?.role === "admin" && (
+          <Link
+            to="/admin"
+            className="text-sm font-medium text-emerald-600 hover:text-emerald-700"
+          >
+            Admin Panel
+          </Link>
+        )}
 
         <div className="ml-auto flex items-center gap-4">
           {user ? (
@@ -56,6 +66,7 @@ function App() {
         <Route path="/" element={<Dashboard />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/admin" element={<AdminDashboard />} />
       </Routes>
     </div>
   );
