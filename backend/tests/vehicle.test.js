@@ -61,7 +61,7 @@ describe("POST /api/vehicles", () => {
       .send(validVehicle);
 
     expect(res.statusCode).toBe(201);
-    expect(res.body).toHaveProperty("_id");
+    expect(res.body).toHaveProperty("id");
     expect(res.body.make).toBe("Toyota");
     expect(res.body.model).toBe("Camry");
     expect(res.body.category).toBe("Sedan");
@@ -143,7 +143,7 @@ describe("GET /api/vehicles", () => {
 
     expect(res.statusCode).toBe(200);
     expect(res.body).toHaveLength(3);
-    expect(res.body[0]).toHaveProperty("_id");
+    expect(res.body[0]).toHaveProperty("id");
     expect(res.body[0]).toHaveProperty("make");
     expect(res.body[0]).toHaveProperty("model");
     expect(res.body[0]).toHaveProperty("category");
