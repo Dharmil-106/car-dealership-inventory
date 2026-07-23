@@ -25,6 +25,10 @@ const vehicleSchema = new mongoose.Schema(
       min: 0,
       default: 0,
     },
+    imageUrl: {
+      type: String,
+      default: "",
+    },
   },
   {
     timestamps: true,

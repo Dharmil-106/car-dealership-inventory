@@ -68,6 +68,17 @@ describe("POST /api/vehicles", () => {
     expect(res.body.category).toBe("Sedan");
     expect(res.body.price).toBe(25000);
     expect(res.body.quantity).toBe(5);
+    expect(res.body.imageUrl).toBe("");
+  });
+
+  it("allows creating a vehicle with an imageUrl", async () => {
+    const res = await request(app)
+      .post("/api/vehicles")
+      .set("Authorization", `Bearer ${adminToken}`)
+      .send({ ...validVehicle, imageUrl: "https://example.com/car.jpg" });
+
+    expect(res.statusCode).toBe(201);
+    expect(res.body.imageUrl).toBe("https://example.com/car.jpg");
   });
 
   it("rejects when a required field is missing (no make) → 400", async () => {
