@@ -4,6 +4,7 @@ import Dashboard from "./pages/Dashboard";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import AdminDashboard from "./pages/AdminDashboard";
+import MyPurchases from "./pages/MyPurchases";
 
 function App() {
   const { user, logout } = useAuth();
@@ -17,6 +18,15 @@ function App() {
         <Link to="/" className="text-sm text-gray-600 hover:text-emerald-600">
           Dashboard
         </Link>
+
+        {user && user.role !== "admin" && (
+          <Link
+            to="/my-purchases"
+            className="text-sm text-gray-600 hover:text-emerald-600"
+          >
+            My Purchases
+          </Link>
+        )}
 
         {user?.role === "admin" && (
           <Link
@@ -67,6 +77,7 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/admin" element={<AdminDashboard />} />
+        <Route path="/my-purchases" element={<MyPurchases />} />
       </Routes>
     </div>
   );

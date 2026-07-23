@@ -53,6 +53,14 @@ export default function AdminLayout({ children }) {
             <span>Manage Vehicles</span>
           </button>
 
+          <button
+            type="button"
+            onClick={() => scrollToSection("purchase-history")}
+            className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-gray-300 hover:bg-gray-800 hover:text-white transition-colors"
+          >
+            <span>Purchase History</span>
+          </button>
+
           <div className="pt-6">
             <p className="px-3 text-xs font-semibold uppercase tracking-wider text-gray-500">
               Quick Links

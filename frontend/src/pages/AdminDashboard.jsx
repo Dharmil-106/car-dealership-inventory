@@ -4,6 +4,7 @@ import {
   getAllVehicles,
   deleteVehicle,
   restockVehicle,
+  getAllPurchases,
 } from "../api/api";
 import { useAuth } from "../context/AuthContext";
 import AdminLayout from "../components/AdminLayout";
@@ -189,6 +190,7 @@ export default function AdminDashboard() {
   const { user, token } = useAuth();
 
   const [vehicles, setVehicles] = useState([]);
+  const [purchases, setPurchases] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -201,22 +203,32 @@ export default function AdminDashboard() {
     return <Navigate to="/" replace />;
   }
 
-  const fetchVehicles = useCallback(async () => {
+  const fetchData = useCallback(async () => {
     setLoading(true);
     setError(null);
+    
+    // Fetch vehicles
     try {
-      const data = await getAllVehicles();
-      setVehicles(data);
+      const vData = await getAllVehicles();
+      setVehicles(vData);
     } catch (err) {
       setError(err.message || "Failed to load vehicles.");
+    }
+
+    // Fetch purchase history
+    try {
+      const pData = await getAllPurchases(token);
+      setPurchases(pData);
+    } catch (err) {
+      console.warn("Purchase history fetch:", err.message);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [token]);
 
   useEffect(() => {
-    fetchVehicles();
-  }, [fetchVehicles]);
+    fetchData();
+  }, [fetchData]);
 
   // Compute stat card figures
   const totalVehicles = vehicles.length;
@@ -392,6 +404,88 @@ export default function AdminDashboard() {
                           onRestock={handleRestock}
                         />
                       ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Purchase History Section (Table) */}
+        {!loading && !error && (
+          <div id="purchase-history" className="space-y-4 pt-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-lg font-semibold text-gray-900">
+                  Purchase History Table
+                </h2>
+                <p className="text-xs text-gray-500">
+                  Monitor all vehicle transactions and buyer details across the system.
+                </p>
+              </div>
+              <span className="rounded-full bg-gray-200/70 px-3 py-1 text-xs font-medium text-gray-700">
+                {purchases.length} {purchases.length === 1 ? "transaction" : "transactions"}
+              </span>
+            </div>
+
+            {purchases.length === 0 ? (
+              <div className="rounded-xl border border-gray-200 bg-white p-8 text-center text-gray-500">
+                No purchase transactions recorded yet.
+              </div>
+            ) : (
+              <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left text-sm text-gray-700">
+                    <thead className="border-b border-gray-200 bg-gray-50 text-xs uppercase font-semibold text-gray-500">
+                      <tr>
+                        <th scope="col" className="px-4 py-3">Buyer Name</th>
+                        <th scope="col" className="px-4 py-3">Buyer Email</th>
+                        <th scope="col" className="px-4 py-3">Make</th>
+                        <th scope="col" className="px-4 py-3">Model</th>
+                        <th scope="col" className="px-4 py-3">Price Paid</th>
+                        <th scope="col" className="px-4 py-3">Date</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-100">
+                      {purchases.map((p) => {
+                        const buyer = p.userId || p.user || p.buyer || {};
+                        const vehicle = p.vehicleId || p.vehicle || {};
+                        const buyerName = buyer.name || p.userName || "Customer";
+                        const buyerEmail = buyer.email || p.userEmail || "—";
+                        const dateStr = p.createdAt
+                          ? new Date(p.createdAt).toLocaleDateString(undefined, {
+                              year: "numeric",
+                              month: "short",
+                              day: "numeric",
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            })
+                          : "—";
+
+                        return (
+                          <tr key={p._id || p.id} className="hover:bg-gray-50/50 transition-colors">
+                            <td className="px-4 py-3 font-semibold text-gray-900">
+                              {buyerName}
+                            </td>
+                            <td className="px-4 py-3 text-gray-600 text-xs">
+                              {buyerEmail}
+                            </td>
+                            <td className="px-4 py-3 font-medium text-gray-900">
+                              {vehicle.make || p.make || "—"}
+                            </td>
+                            <td className="px-4 py-3 text-gray-700">
+                              {vehicle.model || p.model || "—"}
+                            </td>
+                            <td className="px-4 py-3 font-medium text-emerald-600">
+                              ${(vehicle.price || p.pricePaid || p.price)?.toLocaleString()}
+                            </td>
+                            <td className="px-4 py-3 text-gray-500 text-xs">
+                              {dateStr}
+                            </td>
+                          </tr>
+                        );
+                      })}
                     </tbody>
                   </table>
                 </div>

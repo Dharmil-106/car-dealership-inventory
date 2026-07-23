@@ -18,7 +18,18 @@ async function request(endpoint, { method = "GET", body, token } = {}) {
   }
 
   const res = await fetch(`${BASE_URL}${endpoint}`, config);
-  const data = await res.json();
+
+  const contentType = res.headers.get("content-type");
+  let data;
+  if (contentType && contentType.includes("application/json")) {
+    data = await res.json();
+  } else {
+    const text = await res.text();
+    if (!res.ok) {
+      throw new Error(`Server returned ${res.status} (${res.statusText || "Not Found"})`);
+    }
+    data = text;
+  }
 
   if (!res.ok) {
     throw new Error(data.error || "Something went wrong");
@@ -140,6 +151,26 @@ export async function restockVehicle(id, amount, token) {
     body: { amount: Number(amount) },
     token,
   });
+}
+
+// ── Purchase API ───────────────────────────────────────────────────
+
+/**
+ * GET /api/purchases
+ * Requires: valid token
+ * Returns array of purchases for the authenticated user.
+ */
+export async function getMyPurchases(token) {
+  return request("/purchases", { token });
+}
+
+/**
+ * GET /api/purchases/all
+ * Requires: valid token + role === "admin"
+ * Returns array of all purchases across all users with populated buyer information.
+ */
+export async function getAllPurchases(token) {
+  return request("/purchases/all", { token });
 }
 
 export default request;
