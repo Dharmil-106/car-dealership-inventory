@@ -6,6 +6,7 @@ export default function Register() {
   const { register, loading, error, clearError } = useAuth();
   const navigate = useNavigate();
 
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -26,7 +27,7 @@ export default function Register() {
     }
 
     try {
-      await register(email, password);
+      await register(name, email, password);
       navigate("/");
     } catch {
       // error is already set in AuthContext
@@ -52,6 +53,28 @@ export default function Register() {
               {displayError}
             </div>
           )}
+
+          <div>
+            <label
+              htmlFor="register-name"
+              className="block text-sm font-medium text-gray-700"
+            >
+              Name
+            </label>
+            <input
+              id="register-name"
+              type="text"
+              required
+              value={name}
+              onChange={(e) => {
+                setName(e.target.value);
+                if (error) clearError();
+                if (localError) setLocalError(null);
+              }}
+              className="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 shadow-sm placeholder:text-gray-400 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 focus:outline-none"
+              placeholder="Jane Doe"
+            />
+          </div>
 
           <div>
             <label

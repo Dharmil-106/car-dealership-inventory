@@ -11,7 +11,7 @@ function App() {
     <div className="min-h-screen bg-gray-50">
       <nav className="flex items-center gap-6 border-b border-gray-200 bg-white px-6 py-3">
         <Link to="/" className="font-semibold text-gray-900">
-          AutoHaus
+          Kata
         </Link>
         <Link to="/" className="text-sm text-gray-600 hover:text-emerald-600">
           Dashboard
@@ -20,7 +20,7 @@ function App() {
         <div className="ml-auto flex items-center gap-4">
           {user ? (
             <>
-              <span className="text-sm text-gray-600">{user.email}</span>
+              <span className="text-sm text-gray-600">{user.name || user.email}</span>
               {user.role === "admin" && (
                 <span className="rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-medium text-emerald-700">
                   Admin

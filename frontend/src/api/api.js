@@ -42,12 +42,12 @@ export async function loginUser(email, password) {
 
 /**
  * POST /api/auth/register
- * Returns { id, email, role }
+ * Returns { id, name, email, role }
  */
-export async function registerUser(email, password) {
+export async function registerUser(name, email, password) {
   return request("/auth/register", {
     method: "POST",
-    body: { email, password },
+    body: { name, email, password },
   });
 }
 

@@ -44,7 +44,7 @@ export function AuthProvider({ children }) {
     setError(null);
     try {
       const data = await loginUser(email, password);
-      // API returns { token, user: { id, email, role } }
+      // API returns { token, user: { id, name, email, role } }
       persist(data.token, data.user);
       return data.user;
     } catch (err) {
@@ -55,15 +55,16 @@ export function AuthProvider({ children }) {
     }
   }
 
-  async function register(email, password) {
+  async function register(name, email, password) {
     setLoading(true);
     setError(null);
     try {
-      // Register returns { id, email, role } — no token, so auto-login after
-      await registerUser(email, password);
+      // Register returns { id, name, email, role } — no token, so auto-login after
+      const registeredUser = await registerUser(name, email, password);
       const data = await loginUser(email, password);
-      persist(data.token, data.user);
-      return data.user;
+      const userWithDetails = { ...registeredUser, ...data.user };
+      persist(data.token, userWithDetails);
+      return userWithDetails;
     } catch (err) {
       setError(err.message);
       throw err;
