@@ -1,4 +1,5 @@
 const Vehicle = require("../models/Vehicle");
+const Purchase = require("../models/Purchase");
 
 exports.createVehicle = async (req, res) => {
   try {
@@ -95,6 +96,15 @@ exports.purchaseVehicle = async (req, res) => {
 
     vehicle.quantity -= 1;
     await vehicle.save();
+
+    await Purchase.create({
+      user: req.user.id,
+      vehicleId: vehicle._id,
+      make: vehicle.make,
+      model: vehicle.model,
+      category: vehicle.category,
+      price: vehicle.price,
+    });
 
     return res.json({ id: vehicle._id, quantity: vehicle.quantity });
   } catch (err) {
