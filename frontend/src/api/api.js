@@ -51,4 +51,29 @@ export async function registerUser(email, password) {
   });
 }
 
+// ── Vehicle API ─────────────────────────────────────────────────────
+
+/**
+ * GET /api/vehicles
+ * Returns array of all vehicles (public, no token needed).
+ */
+export async function getAllVehicles() {
+  return request("/vehicles");
+}
+
+/**
+ * GET /api/vehicles/search?make=...&model=...&category=...&minPrice=...&maxPrice=...
+ * Only includes query params that have truthy values.
+ */
+export async function searchVehicles(filters = {}) {
+  const params = new URLSearchParams();
+  for (const [key, value] of Object.entries(filters)) {
+    if (value !== "" && value !== undefined && value !== null) {
+      params.append(key, value);
+    }
+  }
+  const qs = params.toString();
+  return request(`/vehicles/search${qs ? `?${qs}` : ""}`);
+}
+
 export default request;
