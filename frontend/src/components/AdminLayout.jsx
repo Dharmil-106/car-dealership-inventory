@@ -9,10 +9,12 @@ export default function AdminLayout({ children }) {
   const { user, logout } = useAuth();
   const location = useLocation();
 
-  const navItems = [
-    { label: "Overview", href: "/admin" },
-    { label: "Manage Vehicles", href: "/admin" },
-  ];
+  function scrollToSection(id) {
+    const el = document.getElementById(id);
+    if (el) {
+      el.scrollIntoView({ behavior: "smooth" });
+    }
+  }
 
   return (
     <div className="flex min-h-screen bg-gray-50">
@@ -34,22 +36,22 @@ export default function AdminLayout({ children }) {
           <p className="px-3 text-xs font-semibold uppercase tracking-wider text-gray-500">
             Admin Menu
           </p>
-          {navItems.map((item, idx) => {
-            const isActive = location.pathname === item.href && idx === 0;
-            return (
-              <Link
-                key={idx}
-                to={item.href}
-                className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
-                  isActive
-                    ? "bg-emerald-600 text-white"
-                    : "text-gray-300 hover:bg-gray-800 hover:text-white"
-                }`}
-              >
-                <span>{item.label}</span>
-              </Link>
-            );
-          })}
+          
+          <button
+            type="button"
+            onClick={() => scrollToSection("overview")}
+            className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-gray-300 hover:bg-gray-800 hover:text-white transition-colors"
+          >
+            <span>Overview</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => scrollToSection("manage-vehicles")}
+            className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-gray-300 hover:bg-gray-800 hover:text-white transition-colors"
+          >
+            <span>Manage Vehicles</span>
+          </button>
 
           <div className="pt-6">
             <p className="px-3 text-xs font-semibold uppercase tracking-wider text-gray-500">
@@ -57,7 +59,7 @@ export default function AdminLayout({ children }) {
             </p>
             <Link
               to="/"
-              className="mt-1 flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-gray-400 hover:bg-gray-800 hover:text-white"
+              className="mt-1 flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-gray-400 hover:bg-gray-800 hover:text-white transition-colors"
             >
               <span>← Back to Dashboard</span>
             </Link>

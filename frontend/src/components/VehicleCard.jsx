@@ -2,17 +2,15 @@ import { useState } from "react";
 import ConfirmPurchaseModal from "./ConfirmPurchaseModal";
 
 /**
- * Displays a single vehicle as a card with purchase & admin controls.
+ * Displays a single vehicle as a browsing card with purchase capability for customers.
+ * Admin management controls have moved to the dedicated /admin table.
  *
  * Props:
- *   vehicle         — { id, make, model, category, price, quantity }
+ *   vehicle         — { id, make, model, category, price, quantity, imageUrl }
  *   onPurchase      — async (vehicleId) => updatedVehicle | throws
  *   isLoggedIn      — boolean
- *   isAdmin         — boolean (shows Edit, Delete, Restock)
+ *   isAdmin         — boolean (hides purchase button for admin role)
  *   onLoginRedirect — callback when unauthenticated purchase is clicked
- *   onEdit          — function(vehicle)
- *   onDelete        — async (vehicleId)
- *   onRestock       — async (vehicleId, amount)
  */
 export default function VehicleCard({
   vehicle,
@@ -20,16 +18,9 @@ export default function VehicleCard({
   isLoggedIn,
   isAdmin,
   onLoginRedirect,
-  onEdit,
-  onDelete,
-  onRestock,
 }) {
   const [purchasing, setPurchasing] = useState(false);
-  const [deleting, setDeleting] = useState(false);
-  const [restocking, setRestocking] = useState(false);
-  const [showRestockInput, setShowRestockInput] = useState(false);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
-  const [restockAmount, setRestockAmount] = useState("5");
   const [error, setError] = useState(null);
   const [imgError, setImgError] = useState(false);
 
@@ -56,41 +47,6 @@ export default function VehicleCard({
       setError(err.message || "Purchase failed.");
     } finally {
       setPurchasing(false);
-    }
-  }
-
-  async function handleDelete() {
-    if (!window.confirm(`Are you sure you want to delete ${vehicle.make} ${vehicle.model}?`)) {
-      return;
-    }
-
-    setDeleting(true);
-    setError(null);
-    try {
-      await onDelete(vehicle.id);
-    } catch (err) {
-      setError(err.message || "Failed to delete vehicle.");
-      setDeleting(false);
-    }
-  }
-
-  async function handleRestockSubmit(e) {
-    e.preventDefault();
-    const amt = Number(restockAmount);
-    if (isNaN(amt) || amt <= 0) {
-      setError("Please enter a valid amount (> 0).");
-      return;
-    }
-
-    setRestocking(true);
-    setError(null);
-    try {
-      await onRestock(vehicle.id, amt);
-      setShowRestockInput(false);
-    } catch (err) {
-      setError(err.message || "Failed to restock vehicle.");
-    } finally {
-      setRestocking(false);
     }
   }
 
@@ -131,7 +87,7 @@ export default function VehicleCard({
         )}
       </div>
 
-      {/* Make + Model + Admin Badges/Controls */}
+      {/* Make + Model */}
       <div className="flex items-start justify-between gap-2">
         <div>
           <h3 className="text-lg font-semibold text-gray-900">
@@ -141,29 +97,6 @@ export default function VehicleCard({
             {vehicle.category}
           </span>
         </div>
-
-        {/* Admin actions dropdown/buttons */}
-        {isAdmin && (
-          <div className="flex items-center gap-1">
-            <button
-              type="button"
-              onClick={() => onEdit?.(vehicle)}
-              title="Edit vehicle"
-              className="rounded-md border border-gray-200 px-2 py-1 text-xs font-medium text-gray-600 hover:bg-gray-50 hover:text-gray-900"
-            >
-              Edit
-            </button>
-            <button
-              type="button"
-              onClick={handleDelete}
-              disabled={deleting}
-              title="Delete vehicle"
-              className="rounded-md border border-red-200 px-2 py-1 text-xs font-medium text-red-600 hover:bg-red-50 disabled:opacity-50"
-            >
-              {deleting ? "…" : "Delete"}
-            </button>
-          </div>
-        )}
       </div>
 
       {/* Price */}
@@ -171,7 +104,7 @@ export default function VehicleCard({
         ${vehicle.price.toLocaleString()}
       </p>
 
-      {/* Stock badge & Admin Restock button */}
+      {/* Stock badge */}
       <div className="mt-2 flex items-center justify-between">
         {inStock ? (
           <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2.5 py-0.5 text-xs font-medium text-emerald-700">
@@ -184,48 +117,10 @@ export default function VehicleCard({
             Out of Stock
           </span>
         )}
-
-        {isAdmin && !showRestockInput && (
-          <button
-            type="button"
-            onClick={() => setShowRestockInput(true)}
-            className="text-xs font-medium text-emerald-600 hover:underline"
-          >
-            + Restock
-          </button>
-        )}
       </div>
 
-      {/* Restock Inline Input */}
-      {isAdmin && showRestockInput && (
-        <form onSubmit={handleRestockSubmit} className="mt-3 flex items-center gap-2">
-          <input
-            type="number"
-            min="1"
-            value={restockAmount}
-            onChange={(e) => setRestockAmount(e.target.value)}
-            className="w-20 rounded-md border border-gray-300 px-2 py-1 text-xs focus:border-emerald-500 focus:outline-none"
-            placeholder="Amount"
-          />
-          <button
-            type="submit"
-            disabled={restocking}
-            className="rounded-md bg-emerald-600 px-2.5 py-1 text-xs font-medium text-white hover:bg-emerald-700 disabled:opacity-50"
-          >
-            {restocking ? "…" : "Add"}
-          </button>
-          <button
-            type="button"
-            onClick={() => setShowRestockInput(false)}
-            className="text-xs text-gray-500 hover:text-gray-700"
-          >
-            Cancel
-          </button>
-        </form>
-      )}
-
       {/* Inline error */}
-      {error && (
+      {error && !showConfirmModal && (
         <p className="mt-2 text-xs text-red-600">{error}</p>
       )}
 
