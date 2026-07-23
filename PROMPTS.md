@@ -281,3 +281,68 @@ Add a restockVehicle function to src/controllers/vehicleController.js — valida
 Wire POST /api/vehicles/:id/restock in src/routes/vehicleRoutes.js, behind both authMiddleware and adminMiddleware
 
 Don't modify the tests — make the implementation match what they expect.
+
+## Frontend 
+
+### Prompt : 1
+
+Set up a React frontend in /frontend using Vite, with Tailwind CSS configured. I want:
+
+npm create vite@latest . -- --template react as the base
+Tailwind installed and configured (tailwind.config.js, index.css with directives)
+React Router installed and set up with routes: / (Dashboard), /login, /register — placeholder components for each for now, just enough to confirm routing works
+A src/api/api.js file with a configured base URL (http://localhost:5000/api) using fetch, ready for auth/vehicle functions to be added next
+Basic folder structure: src/components/, src/pages/, src/context/, src/api/
+
+Keep this step minimal — just scaffolding and routing working, no real UI yet.
+
+### Prompt : 2
+
+Here's the context for this session: [paste full api-reference.md], and the design direction: [paste full design-brief.md]
+
+Now build authentication for the frontend:
+
+src/context/AuthContext.jsx — React context providing { user, token, login, register, logout }. On login/register success, store the token and user object in state (and in-memory only — no localStorage needed for now unless you want persistence across refreshes, in which case use localStorage carefully and read it on app load). Provide a loading/error state for UI feedback.
+src/api/api.js — add loginUser(email, password) and registerUser(email, password) functions that call the backend per the API reference, handling both success and error responses (the API returns { error: "..." } on failure).
+src/pages/Login.jsx and src/pages/Register.jsx — real forms now (not placeholders), styled per the design brief (centered, single column, clear labels, emerald primary button). Show validation/error messages inline if the API returns an error. On successful login, redirect to / (dashboard).
+Update the nav/header (wherever it lives) to show Login/Register links when logged out, and the user's email + a Logout button when logged in.
+
+Keep it functional first — styling should follow the design brief but don't over-polish yet, we'll do a dedicated styling pass later if needed.
+
+### Prompt : 3
+
+Continuing with the same API reference and design brief context from before. Now build the main dashboard:
+
+src/api/api.js — add:
+getAllVehicles() → calls GET /api/vehicles
+searchVehicles(filters) → calls GET /api/vehicles/search with query params built from a filters object ({ make, model, category, minPrice, maxPrice }, only including keys that have values)
+src/components/VehicleCard.jsx — displays one vehicle per the design brief: make + model (bold), category (small badge/pill), price (prominent, emerald), quantity/stock badge (emerald "In Stock" if > 0, red/gray "Out of Stock" if 0). Purchase button placeholder for now (disabled if quantity is 0) — full purchase logic comes in the next step, for now just render the button in the correct enabled/disabled state.
+src/components/SearchFilters.jsx — a filter bar/form with inputs for make, model, category, min price, max price, and a "Search" button (and a "Clear filters" option). On submit, triggers the search.
+src/pages/Dashboard.jsx — on mount, fetches all vehicles via getAllVehicles() and displays them in a responsive card grid (per design brief: 1 col mobile, 2–3 tablet, 4 desktop). Include the SearchFilters component above the grid — submitting filters calls searchVehicles() instead and re-renders the grid with results. Handle loading state (simple spinner/skeleton) and empty state ("No vehicles match your filters").
+
+This should work for both logged-in and logged-out users, since browsing is public per the API reference.
+
+### Prompt : 4
+
+Continuing with the same context. Now wire up the purchase functionality:
+
+src/api/api.js — add purchaseVehicle(vehicleId, token) → calls POST /api/vehicles/:id/purchase with the Authorization: Bearer <token> header (per the API reference, this requires any logged-in user, not admin-only).
+In VehicleCard.jsx, wire the Purchase button:
+If the user is not logged in (check via AuthContext), clicking Purchase should redirect to /login instead of calling the API (can't purchase without an account).
+If logged in, clicking Purchase calls purchaseVehicle(). On success, update that vehicle's quantity in the UI immediately (no full page refetch needed) — decrement by 1, and disable the button if it hits 0.
+On failure (e.g. someone else bought the last one between page load and click, returning the "out of stock" error), show an inline error message on the card and update the button to disabled/Out of Stock state.
+Show a brief loading state on the button while the request is in flight (disable it, maybe a small spinner) to prevent double-clicks/double-purchases.
+
+Keep the state update local to the Dashboard's vehicle list (e.g. update the array in state) rather than refetching the whole list from the server on every purchase — better UX, avoids unnecessary requests.
+
+### Prompt : 5
+
+Continuing with the context above (API reference, design brief, and existing app structure). Now build admin-only vehicle management:
+
+src/api/api.js — add createVehicle(data, token), updateVehicle(id, data, token), deleteVehicle(id, token), restockVehicle(id, amount, token) — all calling their respective endpoints per the API reference with the Bearer token.
+src/components/VehicleForm.jsx — a reusable form for both creating and editing a vehicle (make, model, category, price, quantity fields), styled per the design brief. Takes an optional existingVehicle prop — if provided, pre-fills the form for editing; if not, it's a blank create form. Calls createVehicle or updateVehicle accordingly on submit, shows validation/error messages inline.
+In VehicleCard.jsx — conditionally show Edit, Delete, and Restock controls only if the logged-in user's role is "admin" (check via AuthContext). Delete should confirm before actually deleting (simple confirm dialog is fine). Restock can be a small inline form/button that prompts for an amount and calls restockVehicle.
+Add a way to trigger "Add New Vehicle" (e.g. a button on the Dashboard, visible only to admins, opening VehicleForm in create mode — a modal or a separate route/page, your choice, whichever is simpler to wire).
+All of these actions should update the local vehicle list state immediately on success (add/update/remove the relevant vehicle) rather than requiring a full page refetch.
+
+Since these are all admin-only actions, also handle the case where a non-admin somehow triggers one anyway (shouldn't be possible via UI, but the backend will reject with 403 — show that error gracefully if it ever happens).
