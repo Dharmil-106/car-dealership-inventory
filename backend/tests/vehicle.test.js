@@ -441,6 +441,15 @@ describe("POST /api/vehicles/:id/purchase", () => {
     expect(res.statusCode).toBe(404);
     expect(res.body).toEqual({ error: "Vehicle not found" });
   });
+
+  it("rejects admin role → 403", async () => {
+    const res = await request(app)
+      .post(`/api/vehicles/${vehicleId}/purchase`)
+      .set("Authorization", `Bearer ${adminToken}`);
+
+    expect(res.statusCode).toBe(403);
+    expect(res.body).toEqual({ error: "Admins cannot purchase vehicles" });
+  });
 });
 
 describe("POST /api/vehicles/:id/restock", () => {

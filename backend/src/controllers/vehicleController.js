@@ -79,6 +79,10 @@ exports.deleteVehicle = async (req, res) => {
 
 exports.purchaseVehicle = async (req, res) => {
   try {
+    if (req.user && req.user.role === "admin") {
+      return res.status(403).json({ error: "Admins cannot purchase vehicles" });
+    }
+
     const vehicle = await Vehicle.findById(req.params.id);
 
     if (!vehicle) {
