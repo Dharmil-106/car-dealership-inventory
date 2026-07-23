@@ -7,6 +7,16 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+// Root route
+app.get("/", (_req, res) => {
+  res.json({
+    message: "Car Dealership Inventory API",
+    status: "online",
+    healthCheck: "/api/health",
+    documentation: "See README.md for endpoint documentation"
+  });
+});
+
 // Health-check route
 app.get("/api/health", (_req, res) => {
   res.json({ status: "ok" });
