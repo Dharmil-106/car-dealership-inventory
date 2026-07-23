@@ -6,11 +6,11 @@ const SALT_ROUNDS = 10;
 
 exports.register = async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const { name, email, password } = req.body;
 
     // Validate required fields
-    if (!email || !password) {
-      return res.status(400).json({ error: "Email and password are required" });
+    if (!name || !email || !password) {
+      return res.status(400).json({ error: "Name, email, and password are required" });
     }
 
     // Check for duplicate email
@@ -22,6 +22,7 @@ exports.register = async (req, res) => {
     // Hash password and create user — role is always "customer"
     const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
     const user = await User.create({
+      name,
       email,
       password: hashedPassword,
       role: "customer",
@@ -29,6 +30,7 @@ exports.register = async (req, res) => {
 
     return res.status(201).json({
       id: user._id,
+      name: user.name,
       email: user.email,
       role: user.role,
     });
@@ -69,6 +71,7 @@ exports.login = async (req, res) => {
       token,
       user: {
         id: user._id,
+        name: user.name,
         email: user.email,
         role: user.role,
       },

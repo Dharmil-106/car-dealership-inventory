@@ -29,6 +29,7 @@ beforeAll(async () => {
   // Create an admin user directly in the DB (bypasses register's default-to-customer)
   const hashedPassword = await bcrypt.hash("AdminPass123", 10);
   const admin = await User.create({
+    name: "Admin User",
     email: "admin@test.com",
     password: hashedPassword,
     role: "admin",
@@ -40,7 +41,7 @@ beforeAll(async () => {
   // Create a customer user via the register endpoint
   const customerRes = await request(app)
     .post("/api/auth/register")
-    .send({ email: "customer@test.com", password: "CustPass123" });
+    .send({ name: "Customer User", email: "customer@test.com", password: "CustPass123" });
   customerToken = jwt.sign(
     { id: customerRes.body.id, role: "customer" },
     TEST_SECRET,
