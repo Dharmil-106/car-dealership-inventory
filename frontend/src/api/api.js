@@ -27,4 +27,28 @@ async function request(endpoint, { method = "GET", body, token } = {}) {
   return data;
 }
 
+// ── Auth API ────────────────────────────────────────────────────────
+
+/**
+ * POST /api/auth/login
+ * Returns { token, user: { id, email, role } }
+ */
+export async function loginUser(email, password) {
+  return request("/auth/login", {
+    method: "POST",
+    body: { email, password },
+  });
+}
+
+/**
+ * POST /api/auth/register
+ * Returns { id, email, role }
+ */
+export async function registerUser(email, password) {
+  return request("/auth/register", {
+    method: "POST",
+    body: { email, password },
+  });
+}
+
 export default request;
