@@ -88,4 +88,58 @@ export async function purchaseVehicle(vehicleId, token) {
   });
 }
 
+/**
+ * POST /api/vehicles
+ * Requires: valid token + role === "admin"
+ * Request body: { make, model, category, price, quantity }
+ * Returns created vehicle object.
+ */
+export async function createVehicle(data, token) {
+  return request("/vehicles", {
+    method: "POST",
+    body: data,
+    token,
+  });
+}
+
+/**
+ * PUT /api/vehicles/:id
+ * Requires: valid token + role === "admin"
+ * Request body: subset of { make, model, category, price, quantity }
+ * Returns updated vehicle object.
+ */
+export async function updateVehicle(id, data, token) {
+  return request(`/vehicles/${id}`, {
+    method: "PUT",
+    body: data,
+    token,
+  });
+}
+
+/**
+ * DELETE /api/vehicles/:id
+ * Requires: valid token + role === "admin"
+ * Returns { message: "Vehicle deleted" }
+ */
+export async function deleteVehicle(id, token) {
+  return request(`/vehicles/${id}`, {
+    method: "DELETE",
+    token,
+  });
+}
+
+/**
+ * POST /api/vehicles/:id/restock
+ * Requires: valid token + role === "admin"
+ * Request body: { amount }
+ * Returns { id, quantity }
+ */
+export async function restockVehicle(id, amount, token) {
+  return request(`/vehicles/${id}/restock`, {
+    method: "POST",
+    body: { amount: Number(amount) },
+    token,
+  });
+}
+
 export default request;

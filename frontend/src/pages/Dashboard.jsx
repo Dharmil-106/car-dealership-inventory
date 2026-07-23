@@ -1,17 +1,30 @@
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { getAllVehicles, searchVehicles, purchaseVehicle } from "../api/api";
+import {
+  getAllVehicles,
+  searchVehicles,
+  purchaseVehicle,
+  deleteVehicle,
+  restockVehicle,
+} from "../api/api";
 import { useAuth } from "../context/AuthContext";
 import VehicleCard from "../components/VehicleCard";
 import SearchFilters from "../components/SearchFilters";
+import VehicleForm from "../components/VehicleForm";
 
 export default function Dashboard() {
   const { user, token } = useAuth();
   const navigate = useNavigate();
 
+  const isAdmin = user?.role === "admin";
+
   const [vehicles, setVehicles] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  // Modal / Form state
+  const [showForm, setShowForm] = useState(false);
+  const [editingVehicle, setEditingVehicle] = useState(null);
 
   /** Fetch all vehicles on mount */
   const fetchAll = useCallback(async () => {
@@ -49,14 +62,9 @@ export default function Dashboard() {
     }
   }
 
-  /**
-   * Purchase a vehicle — calls API, then updates local state.
-   * Throws on failure so VehicleCard can show the inline error.
-   */
+  /** Purchase vehicle — updates local state */
   async function handlePurchase(vehicleId) {
     const result = await purchaseVehicle(vehicleId, token);
-
-    // Update the vehicle's quantity in local state (no full refetch)
     setVehicles((prev) =>
       prev.map((v) =>
         v.id === vehicleId ? { ...v, quantity: result.quantity } : v
@@ -64,19 +72,76 @@ export default function Dashboard() {
     );
   }
 
+  /** Delete vehicle — updates local state */
+  async function handleDelete(vehicleId) {
+    await deleteVehicle(vehicleId, token);
+    setVehicles((prev) => prev.filter((v) => v.id !== vehicleId));
+  }
+
+  /** Restock vehicle — updates local state */
+  async function handleRestock(vehicleId, amount) {
+    const result = await restockVehicle(vehicleId, amount, token);
+    setVehicles((prev) =>
+      prev.map((v) =>
+        v.id === vehicleId ? { ...v, quantity: result.quantity } : v
+      )
+    );
+  }
+
+  /** Called after successful create or update from VehicleForm */
+  function handleFormSuccess(savedVehicle, isEdit) {
+    if (isEdit) {
+      setVehicles((prev) =>
+        prev.map((v) => (v.id === savedVehicle.id ? savedVehicle : v))
+      );
+    } else {
+      setVehicles((prev) => [savedVehicle, ...prev]);
+    }
+  }
+
+  function handleOpenCreate() {
+    setEditingVehicle(null);
+    setShowForm(true);
+  }
+
+  function handleOpenEdit(vehicle) {
+    setEditingVehicle(vehicle);
+    setShowForm(true);
+  }
+
+  function handleCloseForm() {
+    setShowForm(false);
+    setEditingVehicle(null);
+  }
+
   return (
     <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
-      <h1 className="text-2xl font-semibold text-gray-900">Inventory</h1>
-      <p className="mt-1 text-sm text-gray-500">
-        Browse our current vehicle lineup.
-      </p>
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h1 className="text-2xl font-semibold text-gray-900">Inventory</h1>
+          <p className="mt-1 text-sm text-gray-500">
+            Browse our current vehicle lineup.
+          </p>
+        </div>
+
+        {/* Admin Add Vehicle Button */}
+        {isAdmin && (
+          <button
+            type="button"
+            onClick={handleOpenCreate}
+            className="inline-flex items-center gap-1.5 self-start rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-emerald-700 focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 focus:outline-none sm:self-auto"
+          >
+            <span className="text-lg leading-none">+</span> Add Vehicle
+          </button>
+        )}
+      </div>
 
       {/* Search filters */}
       <div className="mt-5">
         <SearchFilters onSearch={handleSearch} loading={loading} />
       </div>
 
-      {/* Error state */}
+      {/* Global Error state */}
       {error && (
         <div className="mt-6 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">
           {error}
@@ -99,7 +164,11 @@ export default function Dashboard() {
               vehicle={vehicle}
               onPurchase={handlePurchase}
               isLoggedIn={!!user}
+              isAdmin={isAdmin}
               onLoginRedirect={() => navigate("/login")}
+              onEdit={handleOpenEdit}
+              onDelete={handleDelete}
+              onRestock={handleRestock}
             />
           ))}
         </div>
@@ -115,6 +184,15 @@ export default function Dashboard() {
             Try adjusting your search criteria or clearing filters.
           </p>
         </div>
+      )}
+
+      {/* Admin Vehicle Form Modal */}
+      {showForm && (
+        <VehicleForm
+          existingVehicle={editingVehicle}
+          onClose={handleCloseForm}
+          onSuccess={handleFormSuccess}
+        />
       )}
     </div>
   );
