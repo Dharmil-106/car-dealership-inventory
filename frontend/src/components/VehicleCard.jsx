@@ -29,6 +29,7 @@ export default function VehicleCard({
   const [showRestockInput, setShowRestockInput] = useState(false);
   const [restockAmount, setRestockAmount] = useState("5");
   const [error, setError] = useState(null);
+  const [imgError, setImgError] = useState(false);
 
   const inStock = vehicle.quantity > 0;
 
@@ -92,6 +93,35 @@ export default function VehicleCard({
 
   return (
     <div className="group flex flex-col rounded-xl border border-gray-200 bg-white p-5 shadow-sm transition-shadow hover:shadow-md">
+      {/* Vehicle Image / Placeholder */}
+      <div className="relative mb-4 aspect-video w-full overflow-hidden rounded-lg bg-gray-100">
+        {vehicle.imageUrl && !imgError ? (
+          <img
+            src={vehicle.imageUrl}
+            alt={`${vehicle.make} ${vehicle.model}`}
+            onError={() => setImgError(true)}
+            className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+          />
+        ) : (
+          <div className="flex h-full w-full items-center justify-center text-gray-400">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-10 w-10 text-gray-300"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth={1.5}
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M8 17a2 2 0 100 4 2 2 0 000-4zm8 0a2 2 0 100 4 2 2 0 000-4zM3 9l2-4h14l2 4M3 9v7a1 1 0 001 1h1m12 0h1a1 1 0 001-1V9M3 9h18"
+              />
+            </svg>
+          </div>
+        )}
+      </div>
+
       {/* Make + Model + Admin Badges/Controls */}
       <div className="flex items-start justify-between gap-2">
         <div>

@@ -21,6 +21,7 @@ export default function VehicleForm({ existingVehicle, onClose, onSuccess }) {
     category: "",
     price: "",
     quantity: "",
+    imageUrl: "",
   });
 
   const [loading, setLoading] = useState(false);
@@ -34,6 +35,7 @@ export default function VehicleForm({ existingVehicle, onClose, onSuccess }) {
         category: existingVehicle.category || "",
         price: existingVehicle.price ?? "",
         quantity: existingVehicle.quantity ?? "",
+        imageUrl: existingVehicle.imageUrl || "",
       });
     }
   }, [existingVehicle]);
@@ -67,6 +69,7 @@ export default function VehicleForm({ existingVehicle, onClose, onSuccess }) {
       category: formData.category.trim(),
       price: priceNum,
       quantity: quantityNum,
+      imageUrl: formData.imageUrl.trim(),
     };
 
     setLoading(true);
@@ -164,6 +167,24 @@ export default function VehicleForm({ existingVehicle, onClose, onSuccess }) {
               value={formData.category}
               onChange={handleChange}
               placeholder="e.g. Sedan, SUV, Truck"
+              className="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 shadow-sm focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 focus:outline-none"
+            />
+          </div>
+
+          <div>
+            <label
+              htmlFor="vehicle-imageUrl"
+              className="block text-sm font-medium text-gray-700"
+            >
+              Image URL <span className="font-normal text-gray-400">(optional)</span>
+            </label>
+            <input
+              id="vehicle-imageUrl"
+              name="imageUrl"
+              type="url"
+              value={formData.imageUrl}
+              onChange={handleChange}
+              placeholder="https://images.unsplash.com/photo-..."
               className="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 shadow-sm focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 focus:outline-none"
             />
           </div>
