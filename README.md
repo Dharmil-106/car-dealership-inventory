@@ -167,7 +167,7 @@ The backend is built following strict **Test-Driven Development (TDD)** principl
 
 **Test Suite Summary:**
 - **Total Test Suites:** 6 Passed (100%)
-- **Total Tests:** 67 Passed (100%)
+- **Total Tests:** 68 Passed (100%)
 - **Coverage Areas:** User Auth, Vehicle Catalog, Search & Filtering, Admin Access Enforcement, Purchase Flow, Restocking logic, & Server Health.
 
 ---
