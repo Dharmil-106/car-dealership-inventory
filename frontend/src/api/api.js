@@ -1,4 +1,14 @@
-const BASE_URL = "http://localhost:5000/api";
+const getBaseUrl = () => {
+  let url = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+  url = url.trim().replace(/\/$/, "");
+  if (!url.endsWith("/api")) {
+    url += "/api";
+  }
+  return url;
+};
+
+const BASE_URL = getBaseUrl();
+
 
 /**
  * Wrapper around fetch with base URL, JSON headers, and auth token.
