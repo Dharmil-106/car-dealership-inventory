@@ -190,23 +190,25 @@ export default function VehicleCard({
         <p className="mt-2 text-xs text-red-600">{error}</p>
       )}
 
-      {/* Purchase button */}
-      <div className="mt-auto pt-4">
-        <button
-          onClick={handlePurchase}
-          disabled={disabled}
-          className={`block w-full rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
-            disabled
-              ? "cursor-not-allowed bg-gray-100 text-gray-400"
-              : "bg-emerald-600 text-white hover:bg-emerald-700"
-          }`}
-        >
-          {purchasing && (
-            <span className="mr-2 inline-block h-3.5 w-3.5 animate-spin rounded-full border-2 border-gray-300 border-t-white align-middle" />
-          )}
-          {buttonLabel}
-        </button>
-      </div>
+      {/* Purchase button — visible to customers and logged-out users only */}
+      {!isAdmin && (
+        <div className="mt-auto pt-4">
+          <button
+            onClick={handlePurchase}
+            disabled={disabled}
+            className={`block w-full rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
+              disabled
+                ? "cursor-not-allowed bg-gray-100 text-gray-400"
+                : "bg-emerald-600 text-white hover:bg-emerald-700"
+            }`}
+          >
+            {purchasing && (
+              <span className="mr-2 inline-block h-3.5 w-3.5 animate-spin rounded-full border-2 border-gray-300 border-t-white align-middle" />
+            )}
+            {buttonLabel}
+          </button>
+        </div>
+      )}
     </div>
   );
 }
