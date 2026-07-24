@@ -183,7 +183,7 @@ The backend is built following strict **Test-Driven Development (TDD)** principl
 
 ## AI-Assisted Development & Methodology
 
-This project was engineered using structured AI prompt iteration with **Antigravity AI (Gemini 3.6 Flash)** following a strict **TDD paired-prompt methodology**.
+This project was engineered using structured AI prompt iteration with **Antigravity AI** following a strict **TDD paired-prompt methodology**.
 
 - 📄 View the complete prompt history log in **[PROMPTS.md](./PROMPTS.md)**
 
